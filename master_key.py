@@ -86,24 +86,6 @@ def telegram() :
             msg.append('\n'.join(d.values()))
         msg = '\n'.join(msg)
 
-    elif(txt.startswith('서이룸')) :
-        
-        cafe_name = txt.replace("서이룸", "").lstrip()
-        
-        if(cafe_name == "부산서면점"):
-            cafe_name = "부산 서면점"
-        elif(cafe_name == "인천부평점"):
-            cafe_name = "인천 부평점"
-            
-        data = seoul_escape_list(cafe_name)
-        
-        msg = []
-        for d in data:
-            msg.append('\n'.join(d.values()))
-            
-        msg = '\n'.join(msg)
-
-        
     else:
         msg = '등록되지 않은 메세지입니다.'
     
@@ -118,17 +100,22 @@ def telegram() :
     return '', 200
     
     
-@app.route('/set_webhook')
+@app.route('/set_webhook')    # alert창 띄우기 
 def set_webhook():
-    url = TELEGRAM_URL + '/bot' + TELEGRAM_TOKEN + '/set_webhook'
+    url = TELEGRAM_URL + '/bot' + TELEGRAM_TOKEN + '/setWebhook'
     params = {
-        'url': 'https://ssafy-week2-kktkyungtae.c9users.io/{}'.format(TELEGRAM_TOKEN)
+        'url' : 'https://sspy-week2-juneun.c9users.io/{}'.format(TELEGRAM_TOKEN)
     }
     response = requests.get(url, params = params).text
     return response
     
     
-
+    
+def master_key_info(cd):
+    url = 'http://www.master-key.co.kr/booking/booking_list_new'
+    params = {
+        'date' : '2018-12-22',
+        'store' : cd,
         'room' : ''
         
     }
@@ -193,37 +180,3 @@ def master_key_list():
     # print(CAFE_LIST)
     return CAFE_LIST
 
-def seoul_escape_list(cafe_name) :
-    url = "http://www.seoul-escape.com/reservation/change_date/"
-    params = {
-        'current_date' : "2018/12/21"
-    }
-    response = requests.get(url, params = params).text
-    document = json.loads(response)
-    
-    cafe_code = {}
-    for book in document["bookList"]:
-        cafe_code[book["branch"]]=book["branch_id"]
-
-    txt = cafe_name
-    CAFE_LIST = []
-    for book in document["bookList"]:
-        if(book["branch"] == txt):
-            booked = book["booked"]
-            
-            if(booked == False):
-                booked = "예약가능"
-            elif(booked == True):
-                booked = "예약불가"
-            else:
-                booked = "홈페이지에서 확인해주세요."
-            
-            cafe = {
-                'title' : '---------' + book["branch"] + '---------',
-                'room' : book["room"],
-                'time' : '['+ book["hour"]+']',
-                'booked' : '<'+booked+'>'
-            }   
-            CAFE_LIST.append(cafe)
-            
-    return CAFE_LIST
